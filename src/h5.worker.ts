@@ -1,12 +1,26 @@
 /// <reference lib="webworker" />
 
 import h5wasm from "h5wasm";
-import type { Annotation, H5Summary, Sequence } from "./types";
+import type {
+  Annotation,
+  EmbeddedClientData,
+  EmbeddedLabel,
+  EmbeddedSequenceTaxonomy,
+  EmbeddedVideo,
+  H5Summary,
+  Sequence,
+} from "./types";
 
 type H5Dataset = {
   shape: number[];
   value: unknown;
   metadata: { compound_type?: { members: Array<{ name: string }> } };
+};
+
+type H5Handle = {
+  close(): void;
+  attrs: Record<string, { value: unknown }>;
+  get(path: string): unknown;
 };
 
 function plain(value: unknown): string | number | boolean | string[] {
@@ -33,10 +47,79 @@ function integer(value: unknown, label: string) {
   return result;
 }
 
+function textValue(value: unknown, label: string) {
+  if (typeof value === "string") return value.replace(/\0+$/u, "");
+  if (value instanceof Uint8Array) return new TextDecoder().decode(value).replace(/\0+$/u, "");
+  if (Array.isArray(value) && value.every((item) => typeof item === "number")) {
+    return new TextDecoder().decode(Uint8Array.from(value)).replace(/\0+$/u, "");
+  }
+  if (value === undefined || value === null) throw new Error(`${label} is missing`);
+  return String(value).replace(/\0+$/u, "");
+}
+
+function embeddedClientData(
+  handle: H5Handle,
+  attrs: Record<string, string | number | boolean | string[]>,
+  fileSize: number,
+): EmbeddedClientData | undefined {
+  if (attrs.schema_version !== "cw12eu_client_hdf5_v1") return undefined;
+  if (attrs.contract_version !== "1.0.0" || attrs.embedded_dataset_schema_version !== "3.1.0") {
+    throw new Error("Unsupported CW12EU client HDF5 contract");
+  }
+  const videos = rows(handle.get("media/index") as H5Dataset).map<EmbeddedVideo>((row) => ({
+    sequence_index: integer(row.sequence_index, "media sequence_index"),
+    recording_id: textValue(row.recording_id, "media recording_id"),
+    dataset_path: textValue(row.dataset_path, "media dataset_path"),
+    content_type: textValue(row.content_type, "media content_type"),
+    container: textValue(row.container, "media container"),
+    byte_length: integer(row.byte_length, "media byte_length"),
+    file_offset: integer(row.file_offset, "media file_offset"),
+    sha256: textValue(row.sha256, "media sha256"),
+    media_duration_ns: integer(row.media_duration_ns, "media duration"),
+    sample_zero_video_media_time_ns: integer(
+      row.sample_zero_video_media_time_ns,
+      "sample-zero video media time",
+    ),
+  }));
+  const sequenceIndexes = new Set<number>();
+  for (const video of videos) {
+    if (!/^[0-9a-f]{64}$/iu.test(video.sha256)) {
+      throw new Error("Embedded video SHA-256 is invalid");
+    }
+    if (video.byte_length <= 0 || video.file_offset < 0 || video.file_offset + video.byte_length > fileSize) {
+      throw new Error("Embedded video byte range is outside the HDF5 file");
+    }
+    if (sequenceIndexes.has(video.sequence_index)) throw new Error("Embedded video sequence index is duplicated");
+    sequenceIndexes.add(video.sequence_index);
+  }
+  const labels = rows(handle.get("labels/catalog") as H5Dataset).map<EmbeddedLabel>((row) => ({
+    taxonomy_id: textValue(row.taxonomy_id, "taxonomy_id"),
+    taxonomy_version: textValue(row.taxonomy_version, "taxonomy_version"),
+    code: textValue(row.code, "label code"),
+    name: textValue(row.name, "label name"),
+    is_fall: Boolean(row.is_fall),
+    active: Boolean(row.active),
+  }));
+  const sequenceTaxonomies = rows(
+    handle.get("labels/sequence_versions") as H5Dataset,
+  ).map<EmbeddedSequenceTaxonomy>((row) => ({
+    sequence_index: integer(row.sequence_index, "label sequence_index"),
+    taxonomy_id: textValue(row.taxonomy_id, "taxonomy_id"),
+    taxonomy_version: textValue(row.taxonomy_version, "taxonomy_version"),
+  }));
+  return {
+    schema_version: "cw12eu_client_hdf5_v1",
+    contract_version: "1.0.0",
+    videos,
+    labels,
+    sequenceTaxonomies,
+  };
+}
+
 self.onmessage = async (event: MessageEvent<File>) => {
   const file = event.data;
   const mount = `/work-${crypto.randomUUID()}`;
-  let handle: { close(): void; attrs: Record<string, { value: unknown }>; get(path: string): unknown } | undefined;
+  let handle: H5Handle | undefined;
   try {
     const { FS } = await h5wasm.ready;
     FS.mkdir(mount);
@@ -59,7 +142,9 @@ self.onmessage = async (event: MessageEvent<File>) => {
     const attrs = Object.fromEntries(
       Object.entries(handle.attrs).map(([name, attribute]) => [name, plain(attribute.value)]),
     );
-    if (attrs.imu_schema_version !== "3.1.0" || attrs.sampling_rate_hz !== 25) {
+    const strictDataset = attrs.imu_schema_version === "3.1.0";
+    const clientDataset = attrs.schema_version === "cw12eu_client_hdf5_v1";
+    if ((!strictDataset && !clientDataset) || attrs.sampling_rate_hz !== 25) {
       throw new Error("Only CW12EU-compatible HDF5 schema 3.1.0 at 25 Hz is supported");
     }
     const sequences: Sequence[] = rows(sequencesDataset).map((row) => ({
@@ -87,6 +172,7 @@ self.onmessage = async (event: MessageEvent<File>) => {
       samples,
       sequences,
       annotations,
+      embedded: embeddedClientData(handle, attrs, file.size),
     };
     self.postMessage({ ok: true, result: response }, { transfer: [samples.buffer] });
     handle.close();

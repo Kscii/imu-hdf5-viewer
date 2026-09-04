@@ -93,6 +93,40 @@ export interface H5Summary {
   samples: Float32Array;
   sequences: Sequence[];
   annotations: Annotation[];
+  embedded?: EmbeddedClientData;
+}
+
+export interface EmbeddedVideo {
+  sequence_index: number;
+  recording_id: string;
+  dataset_path: string;
+  content_type: string;
+  container: string;
+  byte_length: number;
+  file_offset: number;
+  sha256: string;
+  media_duration_ns: number;
+  sample_zero_video_media_time_ns: number;
+}
+
+export interface EmbeddedLabel extends TaxonomyEntry {
+  taxonomy_id: string;
+  taxonomy_version: string;
+  is_fall: boolean;
+}
+
+export interface EmbeddedSequenceTaxonomy {
+  sequence_index: number;
+  taxonomy_id: string;
+  taxonomy_version: string;
+}
+
+export interface EmbeddedClientData {
+  schema_version: "cw12eu_client_hdf5_v1";
+  contract_version: "1.0.0";
+  videos: EmbeddedVideo[];
+  labels: EmbeddedLabel[];
+  sequenceTaxonomies: EmbeddedSequenceTaxonomy[];
 }
 
 export interface LoadedDelivery {
