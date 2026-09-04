@@ -1,12 +1,17 @@
 # CW12EU-T Data Viewer
 
 A public, local-only and read-only viewer for CW12EU-T customer delivery v2 ZIP
-packages and standalone HDF5 3.1.0 datasets.
+packages, standalone HDF5 3.1.0 datasets, and the experimental
+`cw12eu_client_hdf5_v1` single-file container.
 
 The browser reads selected files locally. The application has no upload API,
 analytics, authentication or persistent dataset store. Complete delivery ZIPs
 provide synchronized review video, frozen taxonomy names and package metadata;
-a standalone HDF5 provides SI sensor data and stable label codes only.
+a standalone training HDF5 provides SI sensor data and stable label codes only.
+The experimental client HDF5 embeds byte-identical MP4 files, sample-to-video
+timing, and frozen label names while preserving the three strict v3.1 training
+datasets at the root. It is a compatibility experiment, not the production
+delivery format or a replacement for delivery v2 ZIP.
 
 ## Development
 
@@ -18,7 +23,8 @@ npm run dev
 ```
 
 Open <http://127.0.0.1:5173>. Chromium desktop is the release acceptance
-browser. The advanced HDF5 tree uses H5Web/h5wasm; the tailored CW12EU-T views
+browser. The advanced HDF5 tree uses H5Web/h5wasm in a separate full-screen
+view; the tailored CW12EU-T views
 use the frozen project contract in `docs/contracts/`.
 
 Temporary OPFS storage is used only as a media fallback when a browser cannot
