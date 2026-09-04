@@ -1,0 +1,32 @@
+{
+  "name": "imu-hdf5-viewer",
+  "private": true,
+  "version": "0.1.0",
+  "license": "MIT",
+  "repository": "github:Kscii/imu-hdf5-viewer",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc -b && vite build",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@h5web/app": "17.0.0",
+    "@h5web/h5wasm": "17.0.0",
+    "h5wasm": "0.10.3",
+    "h5wasm-plugins": "0.3.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.55.0",
+    "@types/react": "18.3.24",
+    "@types/react-dom": "18.3.7",
+    "@vitejs/plugin-react": "5.0.2",
+    "typescript": "5.9.2",
+    "vite": "7.3.6",
+    "vitest": "3.2.4"
+  }
+}
