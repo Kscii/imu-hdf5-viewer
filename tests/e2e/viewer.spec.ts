@@ -26,16 +26,21 @@ test("opens and navigates a training_dataset", async ({ page }) => {
   await expect(page.locator(".playback output")).not.toContainText("1 / 49");
 });
 
-test("opens a client_delivery and exposes embedded video", async ({ page }) => {
+test("opens a client_delivery and exposes embedded video", async ({ page }, testInfo) => {
   await page.goto("/");
   await page.locator('input[type="file"]').setInputFiles(fixture("client-v3.2.h5"));
   await expect(page.getByText(/client_delivery/).last()).toBeVisible();
   await page.getByRole("button", { name: /Recordings & video|录制与视频/ }).click();
   const video = page.locator("video");
   await expect(video).toBeVisible();
-  await expect
-    .poll(() => video.evaluate((element) => element.readyState))
-    .toBeGreaterThanOrEqual(1);
+  // Playwright's Linux Chromium build excludes patented H.264 codecs. Firefox,
+  // WebKit, system Chromium, Edge and Chrome exercise metadata decode; Chromium
+  // CI still verifies HDF5 range extraction and creation of the media element.
+  if (testInfo.project.name !== "chromium") {
+    await expect
+      .poll(() => video.evaluate((element) => element.readyState))
+      .toBeGreaterThanOrEqual(1);
+  }
   await page.getByRole("button", { name: "+1", exact: true }).click();
   await expect(page.locator(".playback output")).toContainText("1 / 49");
   await expect(page.getByText(/activity · Walking/)).toBeVisible();
