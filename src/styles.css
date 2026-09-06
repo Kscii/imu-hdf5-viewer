@@ -21,6 +21,13 @@ h1 { margin:8px 0 0; font-size:clamp(28px,4vw,44px); letter-spacing:-.04em; }
 button.secondary,.tabs button,.chart-toolbar button,.link { border:1px solid #294767; background:#0d2139; border-radius:9px; padding:9px 13px; cursor:pointer; }
 .primary-action { border:1px solid #3f98f4; background:#1764bc; color:#fff; border-radius:9px; padding:10px 15px; cursor:pointer; font-weight:700; }
 .warning { padding:9px 30px; background:#352a0b; border-bottom:1px solid #735b16; color:#ffd968; font-size:13px; }
+.integrity-bar { display:flex; justify-content:space-between; align-items:center; gap:18px; }
+.integrity-bar>span { max-width:760px; }
+.integrity-bar>div { display:flex; align-items:center; justify-content:flex-end; gap:9px; min-width:0; }
+.integrity-bar small { color:#e6c75d; }
+.integrity-bar button { border:1px solid #94721e; background:#4a390e; color:#fff3b0; border-radius:8px; padding:6px 10px; cursor:pointer; white-space:nowrap; }
+.integrity-bar progress { width:min(280px,24vw); accent-color:#53b8ff; }
+.integrity-bar code { display:block; max-width:min(520px,38vw); overflow:hidden; text-overflow:ellipsis; color:#fff3b0; }
 .tabs { display:flex; gap:8px; padding:12px 30px 0; background:#08182b; border-bottom:1px solid #1b3553; }
 .tabs button { border:0; border-bottom:2px solid transparent; border-radius:8px 8px 0 0; color:#91a9c4; padding:11px 16px; background:transparent; }
 .tabs button.active { color:#fff; border-bottom-color:#43a1ff; background:#102945; }
@@ -39,5 +46,5 @@ button.secondary,.tabs button,.chart-toolbar button,.link { border:1px solid #29
 .advanced-shell { width:100vw; height:100vh; overflow:hidden; background:#f7f9fc; color:#15283e; display:grid; grid-template-rows:auto 1fr; }.advanced-header { display:flex; justify-content:space-between; align-items:center; gap:20px; padding:12px 18px; border-bottom:1px solid #c7d2df; background:#eef3f8; }.advanced-header h1 { margin:2px 0 0; font-size:20px; }.advanced-header .secondary { color:#eaf3ff; }.advanced-stage { min-height:0; overflow:hidden; }
 .file-table { display:grid; gap:5px; }.file-table>div { display:grid; grid-template-columns:minmax(300px,1fr) 180px 100px; gap:12px; padding:8px; border-bottom:1px solid #1b3552; }.file-table code { overflow-wrap:anywhere; }.file-table span { color:#91a8c0; }.file-table span:last-child{text-align:right}.card details { margin-top:18px; }.card pre { max-height:50vh; overflow:auto; background:#061325; border-radius:8px; padding:13px; font-size:12px; }
 footer { display:flex; justify-content:space-between; padding:10px 28px; border-top:1px solid #1c3554; color:#7f99b5; font-size:12px; }.link { border:0;background:transparent;color:#6ebcff;padding:0; }
-@media(max-width:900px){.metrics{grid-template-columns:repeat(2,1fr)}.split{grid-template-columns:1fr}.recording-list{position:static;max-height:220px}.chart-stack{grid-template-columns:1fr}.chart-stack .signal-chart,.chart-stack label{grid-column:1}.local-pill{display:none}.file-table>div{grid-template-columns:1fr}.file-table span:last-child{text-align:left}.playback{grid-template-columns:1fr}.playback output{text-align:left}.playback small{grid-column:1}}
-@media(max-width:560px){.topbar{padding:14px}.content{padding:12px}.tabs{padding-left:12px;overflow:auto}.warning{padding:9px 14px}.metrics{grid-template-columns:1fr 1fr}.header-actions{flex-direction:column}.signal-chart{height:220px}}
+@media(max-width:900px){.metrics{grid-template-columns:repeat(2,1fr)}.split{grid-template-columns:1fr}.recording-list{position:static;max-height:220px}.chart-stack{grid-template-columns:1fr}.chart-stack .signal-chart,.chart-stack label{grid-column:1}.local-pill{display:none}.file-table>div{grid-template-columns:1fr}.file-table span:last-child{text-align:left}.playback{grid-template-columns:1fr}.playback output{text-align:left}.playback small{grid-column:1}.integrity-bar{align-items:flex-start;flex-direction:column}.integrity-bar>div{justify-content:flex-start;flex-wrap:wrap}.integrity-bar code{max-width:72vw}.integrity-bar progress{width:50vw}}
+@media(max-width:560px){.topbar{padding:14px}.content{padding:12px}.tabs{padding-left:12px;overflow:auto}.warning{padding:9px 14px}.metrics{grid-template-columns:1fr 1fr}.header-actions{flex-direction:column}.signal-chart{height:220px}.integrity-bar code{max-width:88vw}}

@@ -1,42 +1,5 @@
 export type Locale = "zh" | "en";
 
-export interface PackageFile {
-  path: string;
-  size_bytes: number;
-  sha256: string;
-  role: string;
-  recording_id?: string;
-}
-
-export interface PackageRecording {
-  recording_id: string;
-  participant_id: string;
-  sequence_index: number;
-  merged_sample_start: number;
-  merged_sample_stop: number;
-  video_path: string;
-  view_path: string;
-  taxonomy_path: string;
-}
-
-export interface PackageManifest {
-  schema_version: "cw12eu_client_delivery_v2";
-  contract_version: "2.0.0";
-  snapshot_id: string;
-  snapshot_content_fingerprint: string;
-  snapshot_created_at_utc: string;
-  hdf5_schema_version: "3.1.0";
-  sampling_rate_hz: number;
-  coordinate_frame: "sensor_local";
-  gravity_retained: true;
-  channels: string[];
-  video_contains_identifiable_participants: true;
-  content_hash_verification: string;
-  taxonomies: Array<{ taxonomy_id: string; version: string; path: string }>;
-  recordings: PackageRecording[];
-  files: PackageFile[];
-}
-
 export interface TaxonomyEntry {
   code: string;
   name: string;
@@ -49,21 +12,6 @@ export interface Taxonomy {
   version: string;
   fall: TaxonomyEntry[];
   non_fall: TaxonomyEntry[];
-}
-
-export interface RecordingView {
-  schema_version: string;
-  recording_id: string;
-  participant_id: string;
-  sequence_index: number;
-  merged_sample_start: number;
-  merged_sample_stop: number;
-  sampling_rate_hz: number;
-  sample_count: number;
-  sample_zero_video_media_time_ns: number;
-  taxonomy_id: string;
-  taxonomy_version: string;
-  annotations: Annotation[];
 }
 
 export interface Sequence {
@@ -87,26 +35,22 @@ export interface Annotation {
   code: string;
 }
 
-export interface H5Summary {
-  attrs: Record<string, string | number | boolean | string[]>;
-  sampleCount: number;
-  samples: Float32Array;
-  sequences: Sequence[];
-  annotations: Annotation[];
-  embedded?: EmbeddedClientData;
+export interface TimingPoint {
+  recording_time_ns: number;
+  media_time_ns: number;
 }
 
 export interface EmbeddedVideo {
   sequence_index: number;
-  recording_id: string;
-  dataset_path: string;
   content_type: string;
   container: string;
   byte_length: number;
   file_offset: number;
   sha256: string;
   media_duration_ns: number;
-  sample_zero_video_media_time_ns: number;
+  sample_zero_recording_time_ns: number;
+  sample_zero_media_time_ns: number;
+  timing: TimingPoint[];
 }
 
 export interface EmbeddedLabel extends TaxonomyEntry {
@@ -122,22 +66,23 @@ export interface EmbeddedSequenceTaxonomy {
 }
 
 export interface EmbeddedClientData {
-  schema_version: "cw12eu_client_hdf5_v1";
   contract_version: "1.0.0";
   videos: EmbeddedVideo[];
   labels: EmbeddedLabel[];
   sequenceTaxonomies: EmbeddedSequenceTaxonomy[];
 }
 
+export interface H5Summary {
+  attrs: Record<string, string | number | boolean | string[]>;
+  profile: "training_dataset" | "client_delivery";
+  sampleCount: number;
+  samples: Float32Array;
+  sequences: Sequence[];
+  annotations: Annotation[];
+  embedded?: EmbeddedClientData;
+}
+
 export interface LoadedDelivery {
   source: File;
   h5File: File;
-  manifest?: PackageManifest;
-  recordings: Array<{
-    manifest: PackageRecording;
-    view: RecordingView;
-    video: Blob;
-    taxonomy?: Taxonomy;
-  }>;
-  packageEntries?: string[];
 }
