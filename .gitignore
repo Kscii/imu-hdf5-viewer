@@ -2,7 +2,8 @@ node_modules/
 dist/
 playwright-report/
 test-results/
-tests/fixtures/
+tests/fixtures/*
+!tests/fixtures/*.h5
 .DS_Store
 *.tsbuildinfo
 vite.config.js
