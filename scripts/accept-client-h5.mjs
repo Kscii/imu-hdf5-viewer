@@ -3,7 +3,7 @@ import { chromium } from "@playwright/test";
 const [baseURL, fixturePath, screenshotPath, mode] = process.argv.slice(2);
 const expectNoVideo = mode === "no-video";
 if (!baseURL || !fixturePath) {
-  throw new Error("usage: node scripts/accept-client-h5.mjs <base-url> <client.h5> [screenshot.png]");
+  throw new Error("usage: node scripts/accept-client-h5.mjs <base-url> <file.h5> [screenshot.png] [no-video]");
 }
 
 const browser = await chromium.launch({
@@ -17,7 +17,7 @@ try {
   await page.goto(baseURL);
   await page.locator('input[type="file"]').setInputFiles(fixturePath);
   try {
-    await page.getByText(/客户单 H5 包含视频|client HDF5 embeds video|未自动校验 SHA-256|SHA-256 was not recomputed|训练 HDF5 不含视频|training HDF5 has no video/).waitFor({ timeout: 120_000 });
+    await page.getByText(/客户 H5 包含可识别视频|client HDF5 contains identifiable video|训练数据 H5 不含视频|training HDF5 has no video/).waitFor({ timeout: 120_000 });
   } catch (error) {
     if (screenshotPath) await page.screenshot({ path: screenshotPath, fullPage: true });
     process.stderr.write(`${(await page.locator("body").innerText()).slice(0, 4000)}\n`);

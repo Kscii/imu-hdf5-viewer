@@ -17,3 +17,11 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install h5py numpy
+      - run: ffmpeg -version
+      - run: python scripts/create-test-fixtures.py tests/fixtures
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npm run test:e2e
